@@ -2,11 +2,17 @@
 name = "sn30pro"
 version = "0.1.0"
 edition = "2021"
+authors = ["Rowan S-L <r@fawkes.io>"]
+license = "MIT OR Apache-2.0"
+description = "A small library for interfacing with the SN30Pro controller"
+repository = "https://github.com/rowan-sl/sn30pro"
+keywords = ["ui", "async", "joystick", "input"]
+categories = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-tokio = { version = "1.16.1", features = ["full"] }
+tokio = { version = "1.16.1", features = ["fs", "io-util"] }
 bytes = "1.1.0"
 
 [lib]

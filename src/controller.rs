@@ -28,8 +28,8 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub async fn new(js_id: usize) -> io::Result<Self> {
-        let path = format!("/dev/input/js{}", js_id);
+    pub async fn new(controller_id: usize) -> io::Result<Self> {
+        let path = format!("/dev/input/js{}", controller_id);
         let file = OpenOptions::new().read(true).open(path).await?;
         Ok(Self {
             src: file,
