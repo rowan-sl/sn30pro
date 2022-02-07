@@ -1,8 +1,18 @@
 [package]
-name = "SN30pro-controller"
+name = "sn30pro-controller"
 version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+tokio = { version = "1.16.1", features = ["full"] }
+bytes = "1.1.0"
+
+[[bin]]
+name = "sn30pro_test"
+path = "src/main.rs"
+
+[lib]
+name = "sn30pro"
+path = "src/lib.rs"

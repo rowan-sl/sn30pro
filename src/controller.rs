@@ -1,13 +1,22 @@
-use crate::button::Button;
-use crate::joystick::Joystick;
+use std::io;
+
+use tokio::io::AsyncReadExt;
+use tokio::fs::{File, OpenOptions};
+use bytes::BytesMut;
+
+use crate::base::button::Button;
+use crate::base::joystick::Joystick;
 use crate::parts::triggers::Triggers;
 use crate::parts::button_pad::ButtonPad;
 use crate::parts::direction_pad::DirectionPad;
 use crate::raw;
 
 
-#[derive(Clone, Debug, Hash, PartialEq, Eq, Default)]
+#[derive(Debug)]
 pub struct Controller {
+    src: File,
+    read_buf: BytesMut,
+    //controller components
     triggers: Triggers,
     r_joystick: Joystick,
     l_joystick: Joystick,
@@ -19,13 +28,24 @@ pub struct Controller {
 }
 
 impl Controller {
-    pub fn new() -> Self {
-        Self {
-            ..Default::default()
-        }
+    pub async fn new(js_id: usize) -> io::Result<Self> {
+        let path = format!("/dev/input/js{}", js_id);
+        let file = OpenOptions::new().read(true).open(path).await?;
+        Ok(Self {
+            src: file,
+            read_buf: BytesMut::with_capacity(raw::EVENT_SIZE*3),
+            triggers: Triggers::default(),
+            r_joystick: Joystick::default(),
+            l_joystick: Joystick::default(),
+            start: Button::default(),
+            select: Button::default(),
+            heart: Button::default(),
+            button_pad: ButtonPad::default(),
+            direction_pad: DirectionPad::default(),
+        })
     }
 
-    pub fn sink(&mut self, event: raw::InputUpdate) {
+    fn sink(&mut self, event: raw::InputUpdate) {
         use raw::InputUpdate;
         //TODO make direction pad support checking for last inputs
         match event {
@@ -46,6 +66,36 @@ impl Controller {
             InputUpdate::LJoystickY(val) => {self.l_joystick.y = val}
             InputUpdate::RJoystickX(val) => {self.r_joystick.x = val}
             InputUpdate::RJoystickY(val) => {self.r_joystick.y = val}
+        }
+    }
+    
+    /// Reads data from the internal source file,
+    /// and if there is enough, produces and processes a event,
+    /// 
+    /// returns if a new event was processed
+    /// 
+    /// # Cancel saftey
+    /// this is cancel safe, if it is canceled, no bytes will have been read or data lost.
+    pub async fn update(&mut self) -> io::Result<bool> {
+        self.src.read_buf(&mut self.read_buf).await?;
+        if self.read_buf.len() >= raw::EVENT_SIZE {
+            let bytes_data = self.read_buf.split_to(raw::EVENT_SIZE).freeze();
+            let mut buf: [u8; raw::EVENT_SIZE] = [0; raw::EVENT_SIZE];
+            for i in 0..raw::EVENT_SIZE {
+                buf[i] = bytes_data[i];
+            }
+            // insert this is fine meme here
+            let raw_event: raw::RawEvent = unsafe { std::mem::transmute(buf) };
+            //ignore init events
+            if !raw::is_init_event(&raw_event) {
+                let parsed_event = crate::raw::parse_event(raw_event);
+                self.sink(parsed_event);
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        } else {
+            Ok(false)
         }
     }
 
