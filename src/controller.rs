@@ -77,7 +77,6 @@ impl Controller {
     /// # Cancel saftey
     /// this is cancel safe, if it is canceled, no bytes will have been read or data lost.
     pub async fn update(&mut self) -> io::Result<bool> {
-        self.src.read_buf(&mut self.read_buf).await?;
         if self.read_buf.len() >= raw::EVENT_SIZE {
             let bytes_data = self.read_buf.split_to(raw::EVENT_SIZE).freeze();
             let mut buf: [u8; raw::EVENT_SIZE] = [0; raw::EVENT_SIZE];
@@ -95,6 +94,7 @@ impl Controller {
                 Ok(false)
             }
         } else {
+            self.src.read_buf(&mut self.read_buf).await?;
             Ok(false)
         }
     }
