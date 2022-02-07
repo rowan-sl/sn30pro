@@ -93,8 +93,10 @@ pub enum InputUpdate {
     ButtonPadY(DirectionY),
     LJoystickX(i16),
     LJoystickY(i16),
+    LJoystickButton(ButtonEvent),
     RJoystickX(i16),
     RJoystickY(i16),
+    RJoystickButton(ButtonEvent),
 }
 
 #[derive(Clone, Copy, Debug, Hash, PartialEq, Eq)]
@@ -121,7 +123,9 @@ pub fn parse_event(raw_event: RawEvent) -> InputUpdate {
                 6 => InputUpdate::BtnSelect(ButtonEvent::from_1or0(raw_event.value)),
                 7 => InputUpdate::BtnStart(ButtonEvent::from_1or0(raw_event.value)),
                 8 => InputUpdate::HeartButton(ButtonEvent::from_1or0(raw_event.value)),
-                _ => unreachable!(),
+                9 => InputUpdate::LJoystickButton(ButtonEvent::from_1or0(raw_event.value)),
+                10 => InputUpdate::RJoystickButton(ButtonEvent::from_1or0(raw_event.value)),
+                b => panic!("Invalid button {}", b),
             }
         }
         JS_EVENT_AXIS => {

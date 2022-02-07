@@ -64,8 +64,10 @@ impl Controller {
             InputUpdate::ButtonPadY(direction) => {self.direction_pad.dir_y = direction}
             InputUpdate::LJoystickX(val) => {self.l_joystick.x = val}
             InputUpdate::LJoystickY(val) => {self.l_joystick.y = val}
+            InputUpdate::LJoystickButton(event) => {self.l_joystick.btn.update(event.into())}
             InputUpdate::RJoystickX(val) => {self.r_joystick.x = val}
             InputUpdate::RJoystickY(val) => {self.r_joystick.y = val}
+            InputUpdate::RJoystickButton(event) => {self.r_joystick.btn.update(event.into())}
         }
     }
     
