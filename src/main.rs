@@ -1,10 +1,11 @@
 #![allow(non_snake_case)] //for crate name only
 
 mod raw;
-mod button;
-mod joystick;
+mod base;
 mod parts;
 mod controller;
+use base::button;
+use base::joystick;
 
 use io::Read;
 use std::fs::OpenOptions;
