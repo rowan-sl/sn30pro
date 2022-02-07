@@ -83,7 +83,7 @@ impl Button {
         }
     }
 
-    pub fn update(&mut self, state: ButtonState) {
+    pub(crate) fn update(&mut self, state: ButtonState) {
         if state != self.state {
             match state {
                 ButtonState::Pressed => {
